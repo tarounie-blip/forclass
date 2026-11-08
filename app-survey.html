@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>친구와 나 알아보기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/store.js"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="student-hub.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1">
+        ← 학생 마당으로
+      </a>
+      <span id="stu-info-badge" class="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full"></span>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8">
+    <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 md:p-8 mb-6">
+      <div class="border-b border-slate-100 pb-4 mb-6">
+        <h1 class="text-2xl font-bold text-slate-900">🤝 친구와 나 알아보기</h1>
+        <p class="text-sm text-slate-500 mt-1">솔직하게 응답한 내용은 선생님만 볼 수 있으며, 우리 반의 모둠과 자리 배치에 활용됩니다.</p>
+      </div>
+
+      <!-- STEP 1: 친밀도 다순위 지목 -->
+      <section class="mb-10">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-bold text-slate-800">1. 마음이 잘 맞거나 함께하고 싶은 친구 (최대 5명)</h2>
+          <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">1순위부터 순서대로</span>
+        </div>
+        <div id="pos-picks-container" class="space-y-3 mt-3"></div>
+      </section>
+
+      <!-- STEP 2: 거리감/갈등 다순위 지목 -->
+      <section class="mb-10 pt-6 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-bold text-slate-800">2. 대화할 때 조심스럽거나 아직 거리가 느껴지는 친구 (최대 3명)</h2>
+          <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded">없으면 선택 안 함</span>
+        </div>
+        <div id="neg-picks-container" class="space-y-3 mt-3"></div>
+      </section>
+
+      <!-- STEP 3: 성향 및 관심사 -->
+      <section class="mb-8 pt-6 border-t border-slate-200 space-y-6">
+        <h2 class="text-base font-bold text-slate-800">3. 나의 평소 성향과 관심사</h2>
+        
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">① 쉬는 시간이나 주말에 가장 좋아하는 활동 (최대 2개)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50 text-sm">
+              <input type="checkbox" name="hobby" value="게임" onchange="limitCheck(this, 2)" /> 🎮 모바일/PC 게임
+            </label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50 text-sm">
+              <input type="checkbox" name="hobby" value="스포츠" onchange="limitCheck(this, 2)" /> ⚽ 스포츠 및 야외 활동
+            </label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50 text-sm">
+              <input type="checkbox" name="hobby" value="영상/콘텐츠" onchange="limitCheck(this, 2)" /> 🎬 유튜브, 웹툰, 애니, K-POP
+            </label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50 text-sm">
+              <input type="checkbox" name="hobby" value="창작/정적활동" onchange="limitCheck(this, 2)" /> 🎨 그림, 만들기, 독서, 보드게임
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">② 모둠 활동을 할 때 편한 역할 (1개)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="role" value="기획자형" /> 💡 아이디어를 내는 기획자형</label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="role" value="기록·분석형" /> 📝 자료를 정리하는 기록·분석형</label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="role" value="조율자형" /> 🤝 의견을 맞추는 조율자형</label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="role" value="성실실행형" /> 🛠️ 맡은 일을 해내는 성실 실행형</label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">③ 친구들과 어울리는 스타일 (1개)</label>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="style" value="다수활동형" /> 여러 친구들과 시끌벅적하게 어울리는 게 좋다.</label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="style" value="소수깊이형" /> 마음이 맞는 소수의 단짝과 깊게 이야기하는 게 좋다.</label>
+            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50"><input type="radio" name="style" value="수용반응형" /> 먼저 다가가기보다는 친구가 말을 걸어주면 잘 어울린다.</label>
+          </div>
+        </div>
+      </section>
+
+      <button onclick="submitSurvey()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition">
+        설문 완료 및 제출 코드 만들기
+      </button>
+    </div>
+
+    <!-- 제출 코드 출력 박스 -->
+    <div id="result-box" class="hidden bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-6 mb-10">
+      <h3 class="text-lg font-bold text-emerald-900 mb-1">✅ 설문이 완료되었습니다!</h3>
+      <p class="text-xs text-emerald-800 mb-3">아래 <b>[응답 코드 복사]</b> 버튼을 눌러 선생님께 안내받은 제출처에 붙여넣어 제출하세요.</p>
+      <textarea id="output-code" readonly rows="3" class="w-full p-3 text-xs font-mono bg-white border border-emerald-300 rounded-lg mb-3"></textarea>
+      <div class="flex gap-2">
+        <button onclick="copyCode()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">📋 응답 코드 복사</button>
+        <button onclick="downloadJson()" class="px-4 py-2 bg-white border border-emerald-600 text-emerald-700 font-bold rounded-lg text-xs">💾 파일 저장</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const POS_REASONS = [
+      { label: '예전부터 같은 반이거나 학원·동네에서 자주 만나서', tag: '환경적 친숙함' },
+      { label: '함께 놀거나 대화할 때 유머 코드가 잘 맞고 웃음이 나서', tag: '정서적 유대' },
+      { label: '좋아하는 게임, 유튜브, 스포츠 등 취미가 똑같아서', tag: '관심사 일치' },
+      { label: '내가 힘들거나 곤란할 때 먼저 도와주고 편을 들어주어서', tag: '심리적 지지' },
+      { label: '공부나 모둠 활동을 할 때 배려심이 깊고 협동을 잘해서', tag: '학습·협업 시너지' },
+      { label: '아직 아주 친하진 않지만, 성격이 착해 보여서 친해지고 싶어서', tag: '잠재적 호감' }
+    ];
+
+    const NEG_REASONS = [
+      { label: '과거에 다투거나 서운한 일이 있었는데 아직 풀리지 않아서', tag: '미해결 갈등' },
+      { label: '말투가 너무 직설적이거나 장난이 심해서 상처받은 적이 있어서', tag: '언어·태도 마찰' },
+      { label: '규칙이나 약속을 잘 지키지 않고 자기주장만 강해서', tag: '규칙·가치관 충돌' },
+      { label: '성격이나 노는 스타일이 나랑 너무 달라서 어색해서', tag: '성향 불일치' },
+      { label: '다른 친구들과 어울리는 무리가 달라서 대화할 기회가 없어서', tag: '접점 부족' },
+      { label: '나를 은근히 따돌리거나 기분 나쁘게 쳐다보는 느낌이 들어서', tag: '관계적 소외·위협' }
+    ];
+
+    let me = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      me = ClassStore.getCurrentStudent();
+      if (!me) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'index.html';
+        return;
+      }
+      document.getElementById('stu-info-badge').innerText = `${me.num}번 ${me.name}`;
+
+      const classmates = ClassStore.getRoster().filter(s => !(s.num === me.num && s.name === me.name));
+      const optHtml = '<option value="">-- 친구 선택 (선택 안 함) --</option>' +
+        classmates.map(s => `<option value="${s.name}">${s.num}번 ${s.name}</option>`).join('');
+
+      for (let r = 1; r <= 5; r++) document.getElementById('pos-picks-container').innerHTML += makeBlock('pos', r, optHtml);
+      for (let r = 1; r <= 3; r++) document.getElementById('neg-picks-container').innerHTML += makeBlock('neg', r, optHtml);
+    });
+
+    function makeBlock(type, rank, optHtml) {
+      const isPos = type === 'pos';
+      const reasons = isPos ? POS_REASONS : NEG_REASONS;
+      const badge = isPos ? 'bg-indigo-600' : 'bg-amber-600';
+      const boxBg = isPos ? 'bg-indigo-50/40 border-indigo-100' : 'bg-amber-50/40 border-amber-100';
+
+      const checks = reasons.map(item => `
+        <label class="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer text-xs">
+          <input type="checkbox" name="${type}-reason-${rank}" value="${item.tag}" class="mt-0.5" />
+          <span>${item.label}</span>
+        </label>
+      `).join('');
+
+      return `
+        <div class="p-4 rounded-xl border border-slate-200 bg-white">
+          <div class="flex items-center gap-3">
+            <span class="px-2.5 py-1 ${badge} text-white text-xs font-bold rounded-lg shrink-0">${rank}순위</span>
+            <select id="${type}-name-${rank}" onchange="toggleBox('${type}', ${rank})" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white">
+              ${optHtml}
+            </select>
+          </div>
+          <div id="${type}-box-${rank}" class="hidden mt-3 pt-3 border-t border-slate-100 ${boxBg} p-3 rounded-lg">
+            <p class="text-xs font-bold text-slate-700 mb-2">↳ 선택한 계기나 이유는 무엇인가요? (중복 선택 가능)</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${checks}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleBox(type, rank) {
+      const val = document.getElementById(`${type}-name-${rank}`).value;
+      document.getElementById(`${type}-box-${rank}`).classList.toggle('hidden', !val);
+    }
+
+    function limitCheck(el, max) {
+      if (document.querySelectorAll(`input[name="${el.name}"]:checked`).length > max) {
+        el.checked = false;
+        alert(`최대 ${max}개까지만 선택할 수 있습니다.`);
+      }
+    }
+
+    function submitSurvey() {
+      const pos = [], neg = [];
+      const posSet = new Set(), negSet = new Set();
+
+      for (let r = 1; r <= 5; r++) {
+        const name = document.getElementById(`pos-name-${r}`).value;
+        if (name) {
+          if (posSet.has(name)) return alert(`친밀 친구에 '${name}' 학생이 중복 선택되었습니다.`);
+          posSet.add(name);
+          const reasons = Array.from(document.querySelectorAll(`input[name="pos-reason-${r}"]:checked`)).map(e => e.value);
+          pos.push({ targetName: name, rank: r, reasons });
+        }
+      }
+
+      for (let r = 1; r <= 3; r++) {
+        const name = document.getElementById(`neg-name-${r}`).value;
+        if (name) {
+          if (negSet.has(name)) return alert(`거리감 친구에 '${name}' 학생이 중복 선택되었습니다.`);
+          negSet.add(name);
+          const reasons = Array.from(document.querySelectorAll(`input[name="neg-reason-${r}"]:checked`)).map(e => e.value);
+          neg.push({ targetName: name, rank: r, reasons });
+        }
+      }
+
+      const payload = {
+        id: `${me.num}_${me.name}`,
+        num: me.num,
+        name: me.name,
+        pos, neg,
+        traits: {
+          hobbies: Array.from(document.querySelectorAll('input[name="hobby"]:checked')).map(e => e.value),
+          role: (document.querySelector('input[name="role"]:checked') || {}).value || '',
+          style: (document.querySelector('input[name="style"]:checked') || {}).value || ''
+        }
+      };
+
+      document.getElementById('output-code').value = JSON.stringify(payload);
+      const box = document.getElementById('result-box');
+      box.classList.remove('hidden');
+      box.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyCode() {
+      const el = document.getElementById('output-code');
+      el.select();
+      document.execCommand('copy');
+      alert('응답 코드가 복사되었습니다!');
+    }
+
+    function downloadJson() {
+      const code = document.getElementById('output-code').value;
+      const blob = new Blob([code], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `설문응답_${me.num}번_${me.name}.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교우관계 분석 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="js/store.js"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    #network-graph { width: 100%; height: 500px; border: 1px solid #e2e8f0; border-radius: 0.75rem; background: #ffffff; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="teacher-hub.html" class="text-sm font-bold text-slate-600 hover:text-indigo-600">← 교사 관리실로</a>
+        <span class="text-slate-300">|</span>
+        <h1 class="font-bold text-base text-slate-900">🤝 친구와 나 알아보기 - 종합 분석 대시보드</h1>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="loadSampleData()" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs">✨ 샘플 데이터 체험</button>
+        <button onclick="clearData()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">🗑️ 초기화</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 space-y-6">
+    
+    <!-- 응답 데이터 입력창 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-2">
+          <textarea id="paste-input" rows="3" placeholder="학생들이 제출한 응답 코드를 한 줄에 하나씩 붙여넣으세요..." class="w-full p-3 text-xs font-mono border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          <div class="flex items-center justify-between mt-2">
+            <span id="count-badge" class="text-xs font-bold text-indigo-600">누적된 응답: 0명</span>
+            <button onclick="parsePasted()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs">+ 코드 추가 분석</button>
+          </div>
+        </div>
+        <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center bg-slate-50">
+          <p class="text-xs font-bold text-slate-700 mb-2">📁 JSON 파일 일괄 업로드</p>
+          <input type="file" multiple accept=".json" onchange="handleFiles(event)" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 핵심 요약 카드 3종 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-2xl border border-rose-200 p-5 shadow-xs">
+        <h3 class="font-bold text-rose-900 mb-3">🚨 갈등 및 회피 주의 조합</h3>
+        <div id="card-conflicts" class="space-y-2 text-xs text-slate-600 max-h-52 overflow-y-auto">데이터를 불러오면 자동 분석됩니다.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-emerald-200 p-5 shadow-xs">
+        <h3 class="font-bold text-emerald-900 mb-3">💚 핵심 친밀 및 쌍방 유대</h3>
+        <div id="card-bonds" class="space-y-2 text-xs text-slate-600 max-h-52 overflow-y-auto">데이터를 불러오면 자동 분석됩니다.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-indigo-200 p-5 shadow-xs">
+        <h3 class="font-bold text-indigo-900 mb-3">✨ 잠재적 단짝 추천 (관심사 일치)</h3>
+        <div id="card-potentials" class="space-y-2 text-xs text-slate-600 max-h-52 overflow-y-auto">서먹하지만 성향이 잘 맞는 짝을 찾아줍니다.</div>
+      </div>
+    </div>
+
+    <!-- 소시오그램 네트워크 맵 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h3 class="font-bold text-slate-900 text-base">🕸️ 학급 교우관계 네트워크 맵</h3>
+        <div class="flex items-center gap-4 text-xs font-bold">
+          <span class="flex items-center gap-1"><span class="w-3 h-1 bg-emerald-500 inline-block"></span> 친밀(+)</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-1 bg-rose-500 inline-block"></span> 갈등(-)</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-1 border-b-2 border-dashed border-indigo-400 inline-block"></span> 잠재친화</span>
+        </div>
+      </div>
+      <div id="network-graph"></div>
+    </div>
+
+    <!-- 상세 관계 표 -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-slate-900 text-base">📋 전체 학생 관계 점수 및 계기 상세표</h3>
+        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="이름 또는 계기 검색..." class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 border-y border-slate-200 text-slate-700">
+              <th class="py-3 px-4">학생 A ↔ 학생 B</th>
+              <th class="py-3 px-3 text-center">친밀</th>
+              <th class="py-3 px-3 text-center">갈등</th>
+              <th class="py-3 px-3 text-center">잠재</th>
+              <th class="py-3 px-4">종합 판정</th>
+              <th class="py-3 px-4">상세 계기 및 공통점</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-slate-100">
+            <tr><td colspan="6" class="py-8 text-center text-slate-400">아직 분석된 데이터가 없습니다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const POS_WEIGHTS = { '환경적 친숙함': 1, '정서적 유대': 2, '관심사 일치': 2, '심리적 지지': 3, '학습·협업 시너지': 2, '잠재적 호감': 1 };
+    const NEG_WEIGHTS = { '미해결 갈등': -3, '언어·태도 마찰': -3, '규칙·가치관 충돌': -2, '성향 불일치': -1, '접점 부족': 0, '관계적 소외·위협': -5 };
+    const POS_RANK = { 1: 5, 2: 4, 3: 3, 4: 2, 5: 1 };
+    const NEG_RANK = { 1: -5, 2: -3, 3: -1 };
+
+    let responses = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('teacher_auth') !== 'true') {
+        alert('교사 인증이 필요합니다.');
+        window.location.href = 'index.html';
+      }
+    });
+
+    function addResp(obj) {
+      if (!obj || !obj.name) return;
+      const idx = responses.findIndex(r => r.name === obj.name);
+      if (idx >= 0) responses[idx] = obj;
+      else responses.push(obj);
+    }
+
+    function parsePasted() {
+      const lines = document.getElementById('paste-input').value.trim().split('\n');
+      lines.forEach(l => { try { if (l.trim().startsWith('{')) addResp(JSON.parse(l.trim())); } catch(e){} });
+      document.getElementById('paste-input').value = '';
+      analyze();
+    }
+
+    function handleFiles(e) {
+      const files = Array.from(e.target.files);
+      let done = 0;
+      files.forEach(f => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try { addResp(JSON.parse(ev.target.result)); } catch(err){}
+          if (++done === files.length) analyze();
+        };
+        reader.readAsText(f);
+      });
+    }
+
+    function clearData() {
+      responses = [];
+      document.getElementById('count-badge').innerText = '누적된 응답: 0명';
+      document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">초기화되었습니다.</td></tr>';
+      document.getElementById('network-graph').innerHTML = '';
+    }
+
+    function analyze() {
+      document.getElementById('count-badge').innerText = `누적된 응답: ${responses.length}명`;
+      const nameSet = new Set(ClassStore.getRoster().map(s => s.name));
+      responses.forEach(r => {
+        nameSet.add(r.name);
+        (r.pos || []).forEach(p => nameSet.add(p.targetName));
+        (r.neg || []).forEach(n => nameSet.add(n.targetName));
+      });
+      const names = Array.from(nameSet).sort();
+      const pairs = [];
+
+      for (let i = 0; i < names.length; i++) {
+        for (let j = i + 1; j < names.length; j++) {
+          const A = names[i], B = names[j];
+          const rA = responses.find(r => r.name === A);
+          const rB = responses.find(r => r.name === B);
+          let pos = 0, neg = 0, pot = 0, tags = [];
+
+          const calcDir = (from, to, resp) => {
+            if (!resp) return;
+            const p = (resp.pos || []).find(x => x.targetName === to);
+            if (p) {
+              pos += (POS_RANK[p.rank] || 0);
+              let sum = 0;
+              (p.reasons || []).forEach(t => { sum += (POS_WEIGHTS[t] || 0); tags.push(`<span class="text-emerald-700">[${from}→${to}] ${t}</span>`); });
+              pos += Math.min(sum, 5);
+            }
+            const n = (resp.neg || []).find(x => x.targetName === to);
+            if (n) {
+              neg += (NEG_RANK[n.rank] || 0);
+              const pens = (n.reasons || []).map(t => { tags.push(`<span class="text-rose-700">[${from}→${to}] ${t}</span>`); return NEG_WEIGHTS[t] || 0; }).sort((a,b) => a - b);
+              if (pens.length) {
+                let pSum = pens[0];
+                for (let k = 1; k < pens.length; k++) pSum += pens[k] * 0.5;
+                neg += pSum;
+              }
+            }
+          };
+
+          calcDir(A, B, rA);
+          calcDir(B, A, rB);
+
+          if (rA && rB && (rA.pos||[]).some(p=>p.targetName===B && p.rank<=3) && (rB.pos||[]).some(p=>p.targetName===A && p.rank<=3)) {
+            pos += 2;
+            tags.unshift('<span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">★쌍방유대</span>');
+          }
+
+          if (rA && rB && rA.traits && rB.traits) {
+            const ch = (rA.traits.hobbies || []).filter(h => (rB.traits.hobbies || []).includes(h));
+            pot += ch.length * 1.5;
+            if (rA.traits.role && rA.traits.role === rB.traits.role) pot += 1.5;
+            if (rA.traits.style && rA.traits.style === rB.traits.style) pot += 1.5;
+            if (ch.length) tags.push(`<span class="text-indigo-600">공통취미(${ch.join(',')})</span>`);
+          }
+
+          let status = '일반', badge = 'bg-slate-100 text-slate-600';
+          if (neg <= -6) { status = '🚨 긴급 주의'; badge = 'bg-rose-100 text-rose-800 font-bold'; }
+          else if (neg <= -2) { status = '⚠️ 갈등/거리감'; badge = 'bg-amber-100 text-amber-800 font-bold'; }
+          else if (pos >= 10) { status = '💚 최상 유대'; badge = 'bg-emerald-100 text-emerald-800 font-bold'; }
+          else if (pos >= 4) { status = '💙 우호 관계'; badge = 'bg-sky-100 text-sky-800'; }
+          else if (pos === 0 && neg === 0 && pot >= 3) { status = '✨ 잠재 단짝'; badge = 'bg-indigo-100 text-indigo-800 font-bold'; }
+
+          if (pos > 0 || neg < 0 || pot >= 3) pairs.push({ A, B, pos, neg, pot, status, badge, tags });
+        }
+      }
+
+      renderViews(names, pairs);
+    }
+
+    function renderViews(names, pairs) {
+      const conflicts = pairs.filter(p => p.neg <= -2).sort((a,b) => a.neg - b.neg);
+      const bonds = pairs.filter(p => p.pos >= 7).sort((a,b) => b.pos - a.pos);
+      const pots = pairs.filter(p => p.pos === 0 && p.neg === 0 && p.pot >= 3).sort((a,b) => b.pot - a.pot);
+
+      document.getElementById('card-conflicts').innerHTML = conflicts.length ? conflicts.map(c => `<div class="p-2 bg-rose-50 rounded border border-rose-100"><b>${c.A} ↔ ${c.B}</b> (${c.neg}점)<div class="mt-1">${c.tags.join(', ')}</div></div>`).join('') : '특이 갈등 조합 없음';
+      document.getElementById('card-bonds').innerHTML = bonds.length ? bonds.map(b => `<div class="p-2 bg-emerald-50 rounded border border-emerald-100"><b>${b.A} ↔ ${b.B}</b> (+${b.pos}점)<div class="mt-1">${b.tags.slice(0,2).join(', ')}</div></div>`).join('') : '핵심 유대 데이터 부족';
+      document.getElementById('card-potentials').innerHTML = pots.length ? pots.map(p => `<div class="p-2 bg-indigo-50 rounded border border-indigo-100"><b>${p.A} ↔ ${p.B}</b> (잠재 ${p.pot}점)<div class="mt-1">${p.tags.join(', ')}</div></div>`).join('') : '추천 조합 없음';
+
+      document.getElementById('table-body').innerHTML = pairs.map(p => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-4 font-bold">${p.A} ↔ ${p.B}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-emerald-600">${p.pos > 0 ? '+'+p.pos : 0}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-rose-600">${p.neg < 0 ? p.neg : 0}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-indigo-600">${p.pot}</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded-full ${p.badge}">${p.status}</span></td>
+          <td class="py-2.5 px-4 leading-relaxed">${p.tags.join(' / ')}</td>
+        </tr>
+      `).join('');
+
+      const nodes = new vis.DataSet(names.map(n => ({ id: n, label: n, shape: 'dot', size: 16, font: { size: 13, bold: true }, color: { background: '#4f46e5', border: '#312e81' } })));
+      const edges = [];
+      pairs.forEach(p => {
+        if (p.neg <= -2) edges.push({ from: p.A, to: p.B, color: { color: '#ef4444' }, width: Math.min(Math.abs(p.neg)*0.6, 5), label: `${p.neg}` });
+        else if (p.pos >= 4) edges.push({ from: p.A, to: p.B, color: { color: '#10b981' }, width: Math.min(p.pos*0.5, 5), label: `+${p.pos}` });
+        else if (p.pot >= 4.5) edges.push({ from: p.A, to: p.B, color: { color: '#818cf8' }, dashes: true, width: 1.5 });
+      });
+
+      new vis.Network(document.getElementById('network-graph'), { nodes, edges: new vis.DataSet(edges) }, { physics: { stabilization: true } });
+    }
+
+    function filterTable() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      document.querySelectorAll('#table-body tr').forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none');
+    }
+
+    function loadSampleData() {
+      responses = [
+        { num: 1, name: '김민준', pos: [{ targetName: '박지훈', rank: 1, reasons: ['정서적 유대', '관심사 일치'] }], neg: [{ targetName: '정태양', rank: 1, reasons: ['언어·태도 마찰'] }], traits: { hobbies: ['게임', '스포츠'], role: '기획자형', style: '다수활동형' } },
+        { num: 2, name: '박지훈', pos: [{ targetName: '김민준', rank: 1, reasons: ['심리적 지지'] }], neg: [{ targetName: '정태양', rank: 1, reasons: ['미해결 갈등'] }], traits: { hobbies: ['게임'], role: '성실실행형', style: '소수깊이형' } },
+        { num: 3, name: '이서연', pos: [{ targetName: '최유진', rank: 1, reasons: ['정서적 유대'] }], neg: [], traits: { hobbies: ['창작/정적활동'], role: '기록·분석형', style: '소수깊이형' } },
+        { num: 4, name: '최유진', pos: [{ targetName: '이서연', rank: 1, reasons: ['심리적 지지'] }], neg: [], traits: { hobbies: ['창작/정적활동'], role: '조율자형', style: '다수활동형' } },
+        { num: 5, name: '정태양', pos: [{ targetName: '강도윤', rank: 1, reasons: ['관심사 일치'] }], neg: [{ targetName: '김민준', rank: 1, reasons: ['미해결 갈등', '언어·태도 마찰'] }], traits: { hobbies: ['스포츠'], role: '기획자형', style: '다수활동형' } },
+        { num: 6, name: '한서아', pos: [{ targetName: '이서연', rank: 1, reasons: ['환경적 친숙함'] }], neg: [{ targetName: '송하은', rank: 2, reasons: ['관계적 소외·위협'] }], traits: { hobbies: ['창작/정적활동'], role: '성실실행형', style: '수용반응형' } },
+        { num: 7, name: '강도윤', pos: [], neg: [], traits: { hobbies: ['게임', '창작/정적활동'], role: '기록·분석형', style: '수용반응형' } },
+        { num: 8, name: '송하은', pos: [{ targetName: '최유진', rank: 1, reasons: ['잠재적 호감'] }], neg: [{ targetName: '한서아', rank: 1, reasons: ['성향 불일치'] }], traits: { hobbies: ['영상/콘텐츠'], role: '조율자형', style: '다수활동형' } }
+      ];
+      analyze();
+    }
+  </script>
+</body>
+</html>

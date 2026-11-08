@@ -3,760 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>우리 반 마음 연결 조사 & 교우관계 분석기</title>
-  <!-- Tailwind CSS -->
+  <title>우리반 누리집</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Vis.js Network (소시오그램 관계도 시각화) -->
-  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="js/store.js"></script>
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; }
-    #network-graph { width: 100%; height: 520px; border: 1px solid #e2e8f0; border-radius: 0.75rem; background: #ffffff; }
-    .reason-box { transition: all 0.2s ease-in-out; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col justify-between">
 
-  <!-- 상단 네비게이션 바 -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">🤝</span>
-        <h1 class="font-bold text-lg text-slate-800">우리 반 마음 연결 조사</h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="btn-mode-student" onclick="switchMode('student')" class="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white shadow-sm">
-          학생 설문 화면
-        </button>
-        <button id="btn-mode-teacher" onclick="openTeacherAuth()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
-          🔒 교사 분석 대시보드
-        </button>
-      </div>
+  <header class="bg-white border-b border-slate-200 py-5">
+    <div class="max-w-4xl mx-auto px-4 flex items-center justify-center gap-3">
+      <span class="text-3xl">🏫</span>
+      <h1 id="portal-title" class="text-2xl font-extrabold text-slate-900 tracking-tight">우리반 누리집</h1>
     </div>
   </header>
 
-  <!-- ==================== 1. 학생 설문 영역 ==================== -->
-  <main id="view-student" class="flex-1 max-w-3xl w-full mx-auto px-4 py-8">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 mb-6">
-      <div class="border-b border-slate-100 pb-4 mb-6">
-        <span class="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full mb-2">학급 실태 및 성향 조사</span>
-        <h2 class="text-2xl font-bold text-slate-900">서로를 더 잘 이해하기 위한 마음 설문</h2>
-        <p class="text-sm text-slate-500 mt-1">모든 응답은 선생님만 볼 수 있으며, 우리 반의 모둠 활동과 자리 배치에만 소중하게 활용됩니다.</p>
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- 학생 입장 카드 -->
+      <div onclick="openStudentModal()" class="group cursor-pointer bg-white rounded-3xl p-8 border-2 border-slate-200 hover:border-indigo-500 shadow-sm hover:shadow-md transition flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition">
+          🎒
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 mb-2">학생 입장</h2>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          내 이름과 비밀번호를 입력하고<br/>우리 반 활동 앱과 선생님 피드백을 확인해요.
+        </p>
+        <span class="mt-6 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl group-hover:bg-indigo-700 transition">
+          학생으로 로그인 →
+        </span>
       </div>
 
-      <!-- 기본 정보 입력 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-200">
-        <div>
-          <label class="block text-sm font-bold text-slate-700 mb-1">내 출석 번호</label>
-          <input type="number" id="stu-num" min="1" max="40" placeholder="예: 5" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+      <!-- 교사 입장 카드 -->
+      <div onclick="openTeacherModal()" class="group cursor-pointer bg-white rounded-3xl p-8 border-2 border-slate-200 hover:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition">
+          👩‍🏫
         </div>
-        <div>
-          <label class="block text-sm font-bold text-slate-700 mb-1">내 이름</label>
-          <input type="text" id="stu-name" placeholder="예: 김민준" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-        </div>
+        <h2 class="text-xl font-bold text-slate-900 mb-2">교사 입장</h2>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          학급 명단과 비밀번호를 관리하고<br/>학생들의 활동 결과 분석 및 피드백을 작성합니다.
+        </p>
+        <span class="mt-6 px-5 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl group-hover:bg-slate-900 transition">
+          교사 관리실 입장 →
+        </span>
       </div>
 
-      <!-- STEP 1: 친밀도 다순위 지목 -->
-      <section class="mb-10">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-lg font-bold text-slate-800">1. 마음이 잘 맞거나 함께하고 싶은 친구 (최대 5명)</h3>
-          <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">1순위부터 순서대로 선택</span>
-        </div>
-        <p class="text-sm text-slate-500 mb-4">모둠 활동이나 쉬는 시간에 가장 마음이 잘 통하는 친구를 골라주세요. 친구 이름을 입력하면 이유를 고르는 칸이 나타납니다.</p>
-        <div id="pos-picks-container" class="space-y-4"></div>
-      </section>
-
-      <!-- STEP 2: 거리감/갈등 다순위 지목 -->
-      <section class="mb-10 pt-6 border-t border-slate-200">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-lg font-bold text-slate-800">2. 대화할 때 조심스럽거나 아직 거리가 느껴지는 친구 (최대 3명)</h3>
-          <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">없으면 비워두어도 됩니다</span>
-        </div>
-        <p class="text-sm text-slate-500 mb-4">아직 서먹하거나, 성향이 달라서 조금 조심스러운 친구가 있다면 적어주세요.</p>
-        <div id="neg-picks-container" class="space-y-4"></div>
-      </section>
-
-      <!-- STEP 3: 성향 및 관심사 매칭 -->
-      <section class="mb-8 pt-6 border-t border-slate-200">
-        <h3 class="text-lg font-bold text-slate-800 mb-4">3. 나의 평소 성향과 관심사 알아보기</h3>
-        
-        <!-- 3-1 취미 (복수 최대 2개) -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-slate-700 mb-2">① 쉬는 시간이나 주말에 가장 좋아하는 활동은? (최대 2개 선택)</label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="hobby-options">
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="hobby" value="게임" class="w-4 h-4 text-indigo-600 rounded" onchange="limitCheckbox(this, 2)" />
-              <span class="text-sm">🎮 모바일/PC 게임 (브롤, 로블록스 등)</span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="hobby" value="스포츠" class="w-4 h-4 text-indigo-600 rounded" onchange="limitCheckbox(this, 2)" />
-              <span class="text-sm">⚽ 스포츠 및 야외 활동 (축구, 피구 등)</span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="hobby" value="영상/콘텐츠" class="w-4 h-4 text-indigo-600 rounded" onchange="limitCheckbox(this, 2)" />
-              <span class="text-sm">🎬 유튜브, 웹툰, 애니, K-POP 감상</span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="hobby" value="창작/정적활동" class="w-4 h-4 text-indigo-600 rounded" onchange="limitCheckbox(this, 2)" />
-              <span class="text-sm">🎨 그림, 만들기, 독서, 보드게임</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 3-2 모둠 역할 -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-slate-700 mb-2">② 모둠 활동을 할 때 내가 가장 편한 역할은? (1개 선택)</label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="role" value="기획자형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">💡 아이디어를 내고 이끄는 <b>기획자형</b></span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="role" value="기록·분석형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">📝 자료를 찾고 정리하는 <b>기록·분석형</b></span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="role" value="조율자형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">🤝 의견을 듣고 분위기를 맞추는 <b>조율자형</b></span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="role" value="성실실행형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">🛠️ 맡은 일을 묵묵히 해내는 <b>성실 실행형</b></span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 3-3 대화 스타일 -->
-        <div>
-          <label class="block text-sm font-bold text-slate-700 mb-2">③ 친구들과 어울릴 때 나의 스타일은? (1개 선택)</label>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="style" value="다수활동형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">여러 친구들과 시끌벅적하게 어울리는 게 좋다.</span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="style" value="소수깊이형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">마음이 맞는 소수의 단짝과 깊게 이야기하는 게 좋다.</span>
-            </label>
-            <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="style" value="수용반응형" class="w-4 h-4 text-indigo-600" />
-              <span class="text-sm">먼저 다가가기보다는 친구가 말을 걸어주면 잘 어울린다.</span>
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <button onclick="generateStudentSubmission()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition text-base">
-        설문 완료 및 제출 코드 생성하기
-      </button>
-    </div>
-
-    <!-- 제출 결과 모달/박스 -->
-    <div id="submission-result-box" class="hidden bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-6 mb-10">
-      <h3 class="text-lg font-bold text-emerald-900 mb-2">✅ 설문이 완료되었습니다!</h3>
-      <p class="text-sm text-emerald-800 mb-4">아래 <b>[응답 코드 복사]</b> 버튼을 눌러 선생님께 안내받은 제출처(클래스룸, 설문폼, 채팅창 등)에 붙여넣기 하거나, 파일로 저장해 제출해 주세요.</p>
-      <textarea id="generated-json-code" readonly rows="4" class="w-full p-3 text-xs font-mono bg-white border border-emerald-300 rounded-lg mb-3 text-slate-600"></textarea>
-      <div class="flex flex-wrap gap-3">
-        <button onclick="copySubmissionCode()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-sm">
-          📋 응답 코드 복사하기
-        </button>
-        <button onclick="downloadSubmissionFile()" class="px-5 py-2.5 bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg text-sm">
-          💾 파일(.json)로 저장하기
-        </button>
-      </div>
     </div>
   </main>
 
-  <!-- ==================== 2. 교사 분석 대시보드 영역 ==================== -->
-  <main id="view-teacher" class="hidden flex-1 max-w-6xl w-full mx-auto px-4 py-8">
-    
-    <!-- 데이터 입력 및 관리 패널 -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">📊 학급 교우관계 종합 분석 대시보드</h2>
-          <p class="text-sm text-slate-500">학생들이 제출한 응답 코드(여러 줄 가능)를 붙여넣거나 JSON 파일들을 한꺼번에 불러오세요.</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="loadSampleData()" class="px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs">
-            ✨ 샘플 학급 데이터 체험 (10명)
-          </button>
-          <button onclick="clearAllTeacherData()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">
-            🗑️ 데이터 초기화
-          </button>
-        </div>
-      </div>
+  <footer class="py-6 text-center text-xs text-slate-400">
+    학급 전용 소통 및 실태 조사 포털
+  </footer>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="md:col-span-2">
-          <textarea id="teacher-paste-input" rows="3" placeholder="학생들의 응답 코드를 여기에 한 줄에 하나씩 붙여넣으세요..." class="w-full p-3 text-xs font-mono border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-          <div class="flex items-center justify-between mt-2">
-            <span id="loaded-count-badge" class="text-xs font-bold text-indigo-600">현재 누적된 학생 응답: 0명</span>
-            <button onclick="parsePastedResponses()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs">
-              + 코드 데이터 추가 분석
-            </button>
-          </div>
-        </div>
-        <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center bg-slate-50">
-          <p class="text-xs font-bold text-slate-700 mb-2">📁 JSON 파일 일괄 업로드</p>
-          <input type="file" id="json-file-input" multiple accept=".json" onchange="handleFileUpload(event)" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
-        </div>
-      </div>
-    </div>
-
-    <!-- 핵심 인사이트 요약 카드 3종 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <!-- 1. 긴급 갈등 경보 -->
-      <div class="bg-white rounded-2xl shadow-sm border border-rose-200 p-5">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-lg">🚨</span>
-          <h3 class="font-bold text-rose-900">갈등 및 회피 주의 조합</h3>
-        </div>
-        <div id="card-conflicts" class="space-y-2 text-sm text-slate-600 max-h-56 overflow-y-auto">
-          <p class="text-xs text-slate-400">데이터를 불러오면 자동 분석됩니다.</p>
-        </div>
-      </div>
-
-      <!-- 2. 최상 유대 그룹 -->
-      <div class="bg-white rounded-2xl shadow-sm border border-emerald-200 p-5">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-lg">💚</span>
-          <h3 class="font-bold text-emerald-900">핵심 친밀 및 쌍방 유대</h3>
-        </div>
-        <div id="card-bonds" class="space-y-2 text-sm text-slate-600 max-h-56 overflow-y-auto">
-          <p class="text-xs text-slate-400">데이터를 불러오면 자동 분석됩니다.</p>
-        </div>
-      </div>
-
-      <!-- 3. 잠재적 단짝 추천 -->
-      <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 p-5">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-lg">✨</span>
-          <h3 class="font-bold text-indigo-900">잠재적 단짝 추천 (관심사 일치)</h3>
-        </div>
-        <div id="card-potentials" class="space-y-2 text-sm text-slate-600 max-h-56 overflow-y-auto">
-          <p class="text-xs text-slate-400">서먹하지만 성향이 잘 맞는 짝을 찾아줍니다.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 소시오그램 네트워크 시각화 -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div>
-          <h3 class="font-bold text-slate-900 text-lg">🕸️ 학급 교우관계 네트워크 맵 (소시오그램)</h3>
-          <p class="text-xs text-slate-500">학생 원을 드래그하여 움직일 수 있습니다. 선의 굵기는 점수의 강도를 나타냅니다.</p>
-        </div>
-        <div class="flex items-center gap-4 text-xs font-bold">
-          <span class="flex items-center gap-1"><span class="w-3 h-1 bg-emerald-500 inline-block"></span> 친밀 유대(+)</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-1 bg-rose-500 inline-block"></span> 갈등·거리감(-)</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-1 border-b-2 border-dashed border-indigo-400 inline-block"></span> 잠재 친화(성향일치)</span>
-        </div>
-      </div>
-      <div id="network-graph"></div>
-    </div>
-
-    <!-- 상세 관계 분석 매트릭스 테이블 -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-slate-900 text-lg">📋 전체 학생 관계 점수 및 계기 상세표</h3>
-        <input type="text" id="table-search" onkeyup="filterAnalysisTable()" placeholder="학생 이름 또는 계기 검색..." class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-slate-50 border-y border-slate-200 text-slate-700">
-              <th class="py-3 px-4">학생 A ↔ 학생 B</th>
-              <th class="py-3 px-3 text-center">친밀지수</th>
-              <th class="py-3 px-3 text-center">갈등지수</th>
-              <th class="py-3 px-3 text-center">잠재친화</th>
-              <th class="py-3 px-4">종합 판정</th>
-              <th class="py-3 px-4">선택된 상세 계기 및 공통점</th>
-            </tr>
-          </thead>
-          <tbody id="analysis-table-body" class="divide-y divide-slate-100">
-            <tr><td colspan="6" class="py-8 text-center text-slate-400">아직 분석된 데이터가 없습니다.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
-
-  <!-- 교사 인증 모달 -->
-  <div id="teacher-auth-modal" class="hidden fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 px-4">
+  <!-- 학생 로그인 모달 -->
+  <div id="modal-student" class="hidden fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 px-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-2">🔒 교사 대시보드 접근</h3>
-      <p class="text-xs text-slate-500 mb-4">학생들이 분석 결과를 볼 수 없도록 비밀번호를 입력해 주세요. (초기 기본 비밀번호: <b>1234</b>)</p>
-      <input type="password" id="teacher-pw-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter') verifyTeacherPw()" class="w-full px-3 py-2 border border-slate-300 rounded-lg mb-4 outline-none focus:ring-2 focus:ring-indigo-500" />
+      <h3 class="text-lg font-bold text-slate-900 mb-1">🎒 학생 로그인</h3>
+      <p class="text-xs text-slate-500 mb-4">자신의 이름을 고르고 비밀번호를 입력하세요.</p>
+      
+      <div id="empty-roster-alert" class="hidden mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+        등록된 학생 명단이 없습니다. 선생님이 공유해 주신 전용 링크로 접속해 주세요.
+      </div>
+
+      <select id="stu-select" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl mb-3 text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">-- 이름 선택 --</option>
+      </select>
+      <input type="password" id="stu-pin" placeholder="비밀번호 4자리" onkeydown="if(event.key==='Enter') loginStudent()" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl mb-4 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
       <div class="flex justify-end gap-2">
-        <button onclick="closeTeacherAuth()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">취소</button>
-        <button onclick="verifyTeacherPw()" class="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">확인</button>
+        <button onclick="closeModals()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">취소</button>
+        <button onclick="loginStudent()" class="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">입장하기</button>
       </div>
     </div>
   </div>
 
-<script>
-  // ==================== 상수 및 배점 데이터 정의 ====================
-  const POS_REASONS = [
-    { label: '예전부터 같은 반이거나 학원·동네에서 자주 만나서', tag: '환경적 친숙함', score: 1 },
-    { label: '함께 놀거나 대화할 때 유머 코드가 잘 맞고 웃음이 나서', tag: '정서적 유대', score: 2 },
-    { label: '좋아하는 게임, 유튜브, 스포츠 등 취미가 똑같아서', tag: '관심사 일치', score: 2 },
-    { label: '내가 힘들거나 곤란할 때 먼저 도와주고 편을 들어주어서', tag: '심리적 지지', score: 3 },
-    { label: '공부나 모둠 활동을 할 때 배려심이 깊고 협동을 잘해서', tag: '학습·협업 시너지', score: 2 },
-    { label: '아직 아주 친하진 않지만, 성격이 착해 보여서 친해지고 싶어서', tag: '잠재적 호감', score: 1 }
-  ];
-
-  const NEG_REASONS = [
-    { label: '과거에 다투거나 서운한 일이 있었는데 아직 풀리지 않아서', tag: '미해결 갈등', score: -3 },
-    { label: '말투가 너무 직설적이거나 장난이 심해서 상처받은 적이 있어서', tag: '언어·태도 마찰', score: -3 },
-    { label: '규칙이나 약속을 잘 지키지 않고 자기주장만 강해서', tag: '규칙·가치관 충돌', score: -2 },
-    { label: '성격이나 노는 스타일이 나랑 너무 달라서 어색해서', tag: '성향 불일치', score: -1 },
-    { label: '다른 친구들과 어울리는 무리가 달라서 대화할 기회가 없어서', tag: '접점 부족', score: 0 },
-    { label: '나를 은근히 따돌리거나 기분 나쁘게 쳐다보는 느낌이 들어서', tag: '관계적 소외·위협', score: -5 }
-  ];
-
-  const POS_RANK_WEIGHT = { 1: 5, 2: 4, 3: 3, 4: 2, 5: 1 };
-  const NEG_RANK_WEIGHT = { 1: -5, 2: -3, 3: -1 };
-
-  let storedResponses = []; // 교사 모드에서 누적 관리하는 학생 응답 배열
-
-  // ==================== 초기 설문 폼 렌더링 ====================
-  function initSurveyForm() {
-    const posContainer = document.getElementById('pos-picks-container');
-    for (let r = 1; r <= 5; r++) {
-      posContainer.innerHTML += createPickBlock('pos', r);
-    }
-
-    const negContainer = document.getElementById('neg-picks-container');
-    for (let r = 1; r <= 3; r++) {
-      negContainer.innerHTML += createPickBlock('neg', r);
-    }
-  }
-
-  function createPickBlock(type, rank) {
-    const isPos = type === 'pos';
-    const reasons = isPos ? POS_REASONS : NEG_REASONS;
-    const badgeColor = isPos ? 'bg-indigo-600' : 'bg-amber-600';
-    const borderColor = isPos ? 'border-indigo-100 bg-indigo-50/40' : 'border-amber-100 bg-amber-50/40';
-
-    const checkboxesHtml = reasons.map((item, idx) => `
-      <label class="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:border-indigo-300 text-xs">
-        <input type="checkbox" name="${type}-reason-${rank}" value="${item.tag}" class="mt-0.5 rounded text-indigo-600" />
-        <span class="text-slate-700 leading-snug">${item.label}</span>
-      </label>
-    `).join('');
-
-    return `
-      <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-xs">
-        <div class="flex items-center gap-3">
-          <span class="px-2.5 py-1 ${badgeColor} text-white text-xs font-bold rounded-lg shrink-0">${rank}순위</span>
-          <input type="text" id="${type}-name-${rank}" oninput="toggleReasonBox('${type}', ${rank})" placeholder="친구 이름을 입력하세요 (예: 이서연)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-        </div>
-        <div id="${type}-reasons-box-${rank}" class="hidden mt-3 pt-3 border-t border-slate-100 reason-box ${borderColor} p-3 rounded-lg">
-          <p class="text-xs font-bold text-slate-700 mb-2">↳ 이 친구를 선택한 계기나 이유는 무엇인가요? (중복 선택 가능)</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            ${checkboxesHtml}
-          </div>
-        </div>
+  <!-- 교사 로그인 모달 -->
+  <div id="modal-teacher" class="hidden fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 px-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
+      <h3 class="text-lg font-bold text-slate-900 mb-1">🔒 교사 로그인</h3>
+      <p class="text-xs text-slate-500 mb-4">교사 전용 비밀번호를 입력하세요. (초기 기본값: <b>1234</b>)</p>
+      <input type="password" id="tea-pin" placeholder="교사 비밀번호" onkeydown="if(event.key==='Enter') loginTeacher()" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl mb-4 text-sm outline-none focus:ring-2 focus:ring-slate-800" />
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">취소</button>
+        <button onclick="loginTeacher()" class="px-4 py-2 text-sm font-bold bg-slate-800 text-white rounded-lg hover:bg-slate-900">입장하기</button>
       </div>
-    `;
-  }
+    </div>
+  </div>
 
-  function toggleReasonBox(type, rank) {
-    const val = document.getElementById(`${type}-name-${rank}`).value.trim();
-    const box = document.getElementById(`${type}-reasons-box-${rank}`);
-    if (val.length > 0) box.classList.remove('hidden');
-    else box.classList.add('hidden');
-  }
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const title = ClassStore.getTitle();
+      document.title = title;
+      document.getElementById('portal-title').innerText = title;
 
-  function limitCheckbox(el, max) {
-    const checked = document.querySelectorAll(`input[name="${el.name}"]:checked`);
-    if (checked.length > max) {
-      el.checked = false;
-      alert(`최대 ${max}개까지만 선택할 수 있습니다.`);
-    }
-  }
-
-  // ==================== 학생 설문 제출 코드 생성 ====================
-  function generateStudentSubmission() {
-    const num = document.getElementById('stu-num').value.trim();
-    const name = document.getElementById('stu-name').value.trim();
-    if (!num || !name) {
-      alert('본인의 출석 번호와 이름을 먼저 입력해 주세요.');
-      return;
-    }
-
-    const posPicks = [];
-    for (let r = 1; r <= 5; r++) {
-      const targetName = document.getElementById(`pos-name-${r}`).value.trim();
-      if (targetName) {
-        const reasons = Array.from(document.querySelectorAll(`input[name="pos-reason-${r}"]:checked`)).map(el => el.value);
-        posPicks.push({ targetName, rank: r, reasons });
-      }
-    }
-
-    const negPicks = [];
-    for (let r = 1; r <= 3; r++) {
-      const targetName = document.getElementById(`neg-name-${r}`).value.trim();
-      if (targetName) {
-        const reasons = Array.from(document.querySelectorAll(`input[name="neg-reason-${r}"]:checked`)).map(el => el.value);
-        negPicks.push({ targetName, rank: r, reasons });
-      }
-    }
-
-    const hobbies = Array.from(document.querySelectorAll('input[name="hobby"]:checked')).map(el => el.value);
-    const roleEl = document.querySelector('input[name="role"]:checked');
-    const styleEl = document.querySelector('input[name="style"]:checked');
-
-    const payload = {
-      id: `${num}_${name}`,
-      num: Number(num),
-      name: name,
-      timestamp: new Date().toISOString(),
-      pos: posPicks,
-      neg: negPicks,
-      traits: {
-        hobbies,
-        role: roleEl ? roleEl.value : '',
-        style: styleEl ? styleEl.value : ''
-      }
-    };
-
-    const jsonString = JSON.stringify(payload);
-    document.getElementById('generated-json-code').value = jsonString;
-    const resultBox = document.getElementById('submission-result-box');
-    resultBox.classList.remove('hidden');
-    resultBox.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function copySubmissionCode() {
-    const textarea = document.getElementById('generated-json-code');
-    textarea.select();
-    document.execCommand('copy');
-    alert('응답 코드가 복사되었습니다! 선생님께 안내받은 곳에 붙여넣어 제출하세요.');
-  }
-
-  function downloadSubmissionFile() {
-    const code = document.getElementById('generated-json-code').value;
-    const parsed = JSON.parse(code);
-    const blob = new Blob([code], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `교우관계설문_${parsed.num}번_${parsed.name}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ==================== 화면 전환 및 교사 인증 ====================
-  function openTeacherAuth() {
-    document.getElementById('teacher-auth-modal').classList.remove('hidden');
-    document.getElementById('teacher-pw-input').focus();
-  }
-  function closeTeacherAuth() {
-    document.getElementById('teacher-auth-modal').classList.add('hidden');
-  }
-  function verifyTeacherPw() {
-    const pw = document.getElementById('teacher-pw-input').value;
-    if (pw === '1234') { // 필요 시 비밀번호 수정 가능
-      closeTeacherAuth();
-      switchMode('teacher');
-    } else {
-      alert('비밀번호가 일치하지 않습니다.');
-    }
-  }
-
-  function switchMode(mode) {
-    const stuView = document.getElementById('view-student');
-    const teaView = document.getElementById('view-teacher');
-    const btnStu = document.getElementById('btn-mode-student');
-    const btnTea = document.getElementById('btn-mode-teacher');
-
-    if (mode === 'teacher') {
-      stuView.classList.add('hidden');
-      teaView.classList.remove('hidden');
-      btnTea.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white shadow-sm';
-      btnStu.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200';
-    } else {
-      teaView.classList.add('hidden');
-      stuView.classList.remove('hidden');
-      btnStu.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white shadow-sm';
-      btnTea.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200';
-    }
-  }
-
-  // ==================== 교사 데이터 파싱 및 분석 엔진 ====================
-  function addOrUpdateResponse(obj) {
-    if (!obj || !obj.name) return;
-    const idx = storedResponses.findIndex(item => item.name === obj.name);
-    if (idx >= 0) storedResponses[idx] = obj;
-    else storedResponses.push(obj);
-  }
-
-  function parsePastedResponses() {
-    const raw = document.getElementById('teacher-paste-input').value.trim();
-    if (!raw) return;
-    const lines = raw.split('\n');
-    let added = 0;
-    lines.forEach(line => {
-      try {
-        const cleaned = line.trim();
-        if (cleaned.startsWith('{')) {
-          addOrUpdateResponse(JSON.parse(cleaned));
-          added++;
-        }
-      } catch (e) { console.warn('파싱 오류 줄 건너뜀:', line); }
-    });
-    document.getElementById('teacher-paste-input').value = '';
-    if (added > 0) runAnalysisEngine();
-    else alert('올바른 형식의 응답 코드를 찾지 못했습니다.');
-  }
-
-  function handleFileUpload(event) {
-    const files = event.target.files;
-    if (!files.length) return;
-    let processed = 0;
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          addOrUpdateResponse(JSON.parse(e.target.result));
-        } catch (err) { console.error(err); }
-        processed++;
-        if (processed === files.length) runAnalysisEngine();
-      };
-      reader.readAsText(file);
-    });
-  }
-
-  function clearAllTeacherData() {
-    storedResponses = [];
-    document.getElementById('loaded-count-badge').innerText = '현재 누적된 학생 응답: 0명';
-    document.getElementById('card-conflicts').innerHTML = '<p class="text-xs text-slate-400">데이터가 초기화되었습니다.</p>';
-    document.getElementById('card-bonds').innerHTML = '<p class="text-xs text-slate-400">데이터가 초기화되었습니다.</p>';
-    document.getElementById('card-potentials').innerHTML = '<p class="text-xs text-slate-400">데이터가 초기화되었습니다.</p>';
-    document.getElementById('analysis-table-body').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">아직 분석된 데이터가 없습니다.</td></tr>';
-    document.getElementById('network-graph').innerHTML = '';
-  }
-
-  // 핵심 배점 및 관계 매트릭스 산출
-  function runAnalysisEngine() {
-    document.getElementById('loaded-count-badge').innerText = `현재 누적된 학생 응답: ${storedResponses.length}명`;
-
-    // 전체 학생 이름 집합 추출 (응답자 + 지목된 학생 모두 포함)
-    const nameSet = new Set();
-    storedResponses.forEach(r => {
-      nameSet.add(r.name);
-      (r.pos || []).forEach(p => nameSet.add(p.targetName));
-      (r.neg || []).forEach(n => nameSet.add(n.targetName));
-    });
-    const allNames = Array.from(nameSet).sort();
-
-    const posScoreMap = Object.fromEntries(POS_REASONS.map(r => [r.tag, r.score]));
-    const negScoreMap = Object.fromEntries(NEG_REASONS.map(r => [r.tag, r.score]));
-
-    const pairResults = [];
-
-    for (let i = 0; i < allNames.length; i++) {
-      for (let j = i + 1; j < allNames.length; j++) {
-        const nameA = allNames[i];
-        const nameB = allNames[j];
-        const respA = storedResponses.find(r => r.name === nameA);
-        const respB = storedResponses.find(r => r.name === nameB);
-
-        let posScore = 0;
-        let negScore = 0;
-        let potScore = 0;
-        let tags = [];
-
-        // 단방향 계산 헬퍼
-        const evaluateDirection = (fromName, toName, respObj) => {
-          if (!respObj) return;
-          const pPick = (respObj.pos || []).find(p => p.targetName === toName);
-          if (pPick) {
-            posScore += (POS_RANK_WEIGHT[pPick.rank] || 0);
-            let rSum = 0;
-            (pPick.reasons || []).forEach(tag => {
-              rSum += (posScoreMap[tag] || 0);
-              tags.push(`<span class="text-emerald-700 font-medium">[${fromName}→${toName}] ${tag}</span>`);
-            });
-            posScore += Math.min(rSum, 5); // 긍정 계기 상한 +5
-          }
-
-          const nPick = (respObj.neg || []).find(n => n.targetName === toName);
-          if (nPick) {
-            negScore += (NEG_RANK_WEIGHT[nPick.rank] || 0);
-            const penalties = (nPick.reasons || []).map(tag => {
-              tags.push(`<span class="text-rose-700 font-medium">[${fromName}→${toName}] ${tag}</span>`);
-              return negScoreMap[tag] || 0;
-            }).sort((a, b) => a - b); // 가장 큰 음수(절댓값 최대) 우선
-
-            if (penalties.length > 0) {
-              let pTotal = penalties[0];
-              for (let k = 1; k < penalties.length; k++) pTotal += penalties[k] * 0.5;
-              negScore += pTotal;
-            }
-          }
-        };
-
-        evaluateDirection(nameA, nameB, respA);
-        evaluateDirection(nameB, nameA, respB);
-
-        // 쌍방 3순위 이내 친밀 시너지 (+2)
-        const aLikesB = respA && (respA.pos || []).some(p => p.targetName === nameB && p.rank <= 3);
-        const bLikesA = respB && (respB.pos || []).some(p => p.targetName === nameA && p.rank <= 3);
-        if (aLikesB && bLikesA) {
-          posScore += 2;
-          tags.unshift('<span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded text-xs font-bold">★쌍방 핵심 유대</span>');
-        }
-
-        // 성향 및 관심사 매칭
-        if (respA && respB && respA.traits && respB.traits) {
-          const commonHobbies = (respA.traits.hobbies || []).filter(h => (respB.traits.hobbies || []).includes(h));
-          potScore += commonHobbies.length * 1.5;
-          if (respA.traits.role && respA.traits.role === respB.traits.role) potScore += 1.5;
-          if (respA.traits.style && respA.traits.style === respB.traits.style) potScore += 1.5;
-          if (commonHobbies.length > 0) {
-            tags.push(`<span class="text-indigo-600">공통취미(${commonHobbies.join(', ')})</span>`);
-          }
-        }
-
-        // 판정 분류
-        let status = '일반/중립';
-        let badgeClass = 'bg-slate-100 text-slate-600';
-        if (negScore <= -6) {
-          status = '🚨 긴급 주의 (심각한 갈등/회피)';
-          badgeClass = 'bg-rose-100 text-rose-800 font-bold';
-        } else if (negScore <= -2) {
-          status = '⚠️ 갈등/거리감 존재';
-          badgeClass = 'bg-amber-100 text-amber-800 font-bold';
-        } else if (posScore >= 10) {
-          status = '💚 최상 유대 (단짝)';
-          badgeClass = 'bg-emerald-100 text-emerald-800 font-bold';
-        } else if (posScore >= 4) {
-          status = '💙 우호적 관계';
-          badgeClass = 'bg-sky-100 text-sky-800';
-        } else if (posScore === 0 && negScore === 0 && potScore >= 3) {
-          status = '✨ 잠재적 단짝 추천';
-          badgeClass = 'bg-indigo-100 text-indigo-800 font-bold';
-        }
-
-        if (posScore > 0 || negScore < 0 || potScore >= 3) {
-          pairResults.push({ nameA, nameB, posScore, negScore, potScore, status, badgeClass, tags });
-        }
-      }
-    }
-
-    renderDashboardUI(allNames, pairResults);
-  }
-
-  function renderDashboardUI(allNames, pairs) {
-    // 1. 요약 카드 3종 렌더링
-    const conflicts = pairs.filter(p => p.negScore <= -2).sort((a, b) => a.negScore - b.negScore);
-    const bonds = pairs.filter(p => p.posScore >= 7).sort((a, b) => b.posScore - a.posScore);
-    const potentials = pairs.filter(p => p.posScore === 0 && p.negScore === 0 && p.potScore >= 3).sort((a, b) => b.potScore - a.potScore);
-
-    document.getElementById('card-conflicts').innerHTML = conflicts.length
-      ? conflicts.map(c => `<div class="p-2.5 bg-rose-50 rounded-lg border border-rose-100"><b>${c.nameA} ↔ ${c.nameB}</b> <span class="text-rose-700 font-bold">(${c.negScore}점)</span><div class="text-xs mt-1">${c.tags.join(', ')}</div></div>`).join('')
-      : '<p class="text-xs text-slate-400">특이 갈등 조합이 발견되지 않았습니다.</p>';
-
-    document.getElementById('card-bonds').innerHTML = bonds.length
-      ? bonds.map(b => `<div class="p-2.5 bg-emerald-50 rounded-lg border border-emerald-100"><b>${b.nameA} ↔ ${b.nameB}</b> <span class="text-emerald-700 font-bold">(+${b.posScore}점)</span><div class="text-xs mt-1">${b.tags.slice(0, 2).join(', ')}</div></div>`).join('')
-      : '<p class="text-xs text-slate-400">데이터가 더 모이면 핵심 유대 그룹이 표시됩니다.</p>';
-
-    document.getElementById('card-potentials').innerHTML = potentials.length
-      ? potentials.map(p => `<div class="p-2.5 bg-indigo-50 rounded-lg border border-indigo-100"><b>${p.nameA} ↔ ${p.nameB}</b> <span class="text-indigo-700 font-bold">(잠재 ${p.potScore}점)</span><div class="text-xs mt-1">${p.tags.join(', ')}</div></div>`).join('')
-      : '<p class="text-xs text-slate-400">조건에 맞는 잠재 단짝 조합이 없습니다.</p>';
-
-    // 2. 상세 테이블 렌더링
-    const tbody = document.getElementById('analysis-table-body');
-    if (!pairs.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">표시할 유의미한 관계 데이터가 없습니다.</td></tr>';
-    } else {
-      tbody.innerHTML = pairs.map(p => `
-        <tr class="hover:bg-slate-50">
-          <td class="py-3 px-4 font-bold text-slate-800">${p.nameA} ↔ ${p.nameB}</td>
-          <td class="py-3 px-3 text-center font-bold text-emerald-600">${p.posScore > 0 ? '+' + p.posScore : '0'}</td>
-          <td class="py-3 px-3 text-center font-bold text-rose-600">${p.negScore < 0 ? p.negScore : '0'}</td>
-          <td class="py-3 px-3 text-center font-bold text-indigo-600">${p.potScore}</td>
-          <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs ${p.badgeClass}">${p.status}</span></td>
-          <td class="py-3 px-4 text-xs leading-relaxed">${p.tags.join(' / ')}</td>
-        </tr>
-      `).join('');
-    }
-
-    // 3. Vis.js 네트워크 그래프 렌더링
-    const nodes = new vis.DataSet(allNames.map((name, idx) => ({
-      id: name,
-      label: name,
-      shape: 'dot',
-      size: 18,
-      font: { size: 14, face: 'Pretendard', bold: true },
-      color: { background: '#4f46e5', border: '#312e81' }
-    })));
-
-    const edgesList = [];
-    pairs.forEach(p => {
-      if (p.negScore <= -2) {
-        edgesList.push({
-          from: p.nameA, to: p.nameB,
-          color: { color: '#ef4444' },
-          width: Math.min(Math.abs(p.negScore) * 0.7, 6),
-          label: `${p.negScore}`,
-          font: { color: '#dc2626', size: 11, align: 'top' }
-        });
-      } else if (p.posScore >= 4) {
-        edgesList.push({
-          from: p.nameA, to: p.nameB,
-          color: { color: '#10b981' },
-          width: Math.min(p.posScore * 0.5, 6),
-          label: `+${p.posScore}`,
-          font: { color: '#059669', size: 11, align: 'top' }
-        });
-      } else if (p.potScore >= 4.5) {
-        edgesList.push({
-          from: p.nameA, to: p.nameB,
-          color: { color: '#818cf8' },
-          dashes: true,
-          width: 1.5
+      const roster = ClassStore.getRoster();
+      const select = document.getElementById('stu-select');
+      if (roster.length === 0) {
+        document.getElementById('empty-roster-alert').classList.remove('hidden');
+      } else {
+        roster.forEach(s => {
+          select.innerHTML += `<option value="${s.num}_${s.name}">${s.num}번 ${s.name}</option>`;
         });
       }
     });
 
-    const container = document.getElementById('network-graph');
-    const data = { nodes, edges: new vis.DataSet(edgesList) };
-    const options = {
-      physics: { stabilization: true, barnesHut: { gravitationalConstant: -3000, springLength: 140 } },
-      interaction: { hover: true }
-    };
-    new vis.Network(container, data, options);
-  }
+    function openStudentModal() {
+      document.getElementById('modal-student').classList.remove('hidden');
+    }
+    function openTeacherModal() {
+      document.getElementById('modal-teacher').classList.remove('hidden');
+      document.getElementById('tea-pin').focus();
+    }
+    function closeModals() {
+      document.getElementById('modal-student').classList.add('hidden');
+      document.getElementById('modal-teacher').classList.add('hidden');
+    }
 
-  function filterAnalysisTable() {
-    const query = document.getElementById('table-search').value.toLowerCase();
-    const rows = document.querySelectorAll('#analysis-table-body tr');
-    rows.forEach(row => {
-      row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
-    });
-  }
+    function loginStudent() {
+      const val = document.getElementById('stu-select').value;
+      const pin = document.getElementById('stu-pin').value.trim();
+      if (!val) return alert('이름을 선택해 주세요.');
+      
+      const roster = ClassStore.getRoster();
+      const target = roster.find(s => `${s.num}_${s.name}` === val);
+      if (!target || target.pin !== pin) {
+        return alert('비밀번호가 일치하지 않습니다.');
+      }
 
-  // ==================== 교사 체험용 샘플 데이터 ====================
-  function loadSampleData() {
-    storedResponses = [
-      { id: '1_김민준', num: 1, name: '김민준', pos: [{ targetName: '박지훈', rank: 1, reasons: ['정서적 유대', '관심사 일치'] }, { targetName: '최유진', rank: 2, reasons: ['학습·협업 시너지'] }], neg: [{ targetName: '정태양', rank: 1, reasons: ['언어·태도 마찰', '규칙·가치관 충돌'] }], traits: { hobbies: ['게임', '스포츠'], role: '기획자형', style: '다수활동형' } },
-      { id: '2_박지훈', num: 2, name: '박지훈', pos: [{ targetName: '김민준', rank: 1, reasons: ['심리적 지지', '관심사 일치'] }, { targetName: '한서아', rank: 2, reasons: ['잠재적 호감'] }], neg: [{ targetName: '정태양', rank: 1, reasons: ['미해결 갈등'] }], traits: { hobbies: ['게임', '영상/콘텐츠'], role: '성실실행형', style: '소수깊이형' } },
-      { id: '3_이서연', num: 3, name: '이서연', pos: [{ targetName: '최유진', rank: 1, reasons: ['심리적 지지', '정서적 유대'] }, { targetName: '한서아', rank: 2, reasons: ['환경적 친숙함'] }], neg: [], traits: { hobbies: ['창작/정적활동', '영상/콘텐츠'], role: '기록·분석형', style: '소수깊이형' } },
-      { id: '4_최유진', num: 4, name: '최유진', pos: [{ targetName: '이서연', rank: 1, reasons: ['정서적 유대', '심리적 지지'] }, { targetName: '김민준', rank: 2, reasons: ['학습·협업 시너지'] }], neg: [], traits: { hobbies: ['창작/정적활동', '영상/콘텐츠'], role: '조율자형', style: '다수활동형' } },
-      { id: '5_정태양', num: 5, name: '정태양', pos: [{ targetName: '강도윤', rank: 1, reasons: ['관심사 일치'] }], neg: [{ targetName: '김민준', rank: 1, reasons: ['미해결 갈등', '언어·태도 마찰'] }], traits: { hobbies: ['스포츠'], role: '기획자형', style: '다수활동형' } },
-      { id: '6_한서아', num: 6, name: '한서아', pos: [{ targetName: '이서연', rank: 1, reasons: ['환경적 친숙함'] }], neg: [{ targetName: '송하은', rank: 2, reasons: ['관계적 소외·위협'] }], traits: { hobbies: ['창작/정적활동'], role: '성실실행형', style: '수용반응형' } },
-      { id: '7_강도윤', num: 7, name: '강도윤', pos: [], neg: [], traits: { hobbies: ['게임', '창작/정적활동'], role: '기록·분석형', style: '수용반응형' } },
-      { id: '8_송하은', num: 8, name: '송하은', pos: [{ targetName: '최유진', rank: 1, reasons: ['잠재적 호감'] }], neg: [{ targetName: '한서아', rank: 1, reasons: ['성향 불일치'] }], traits: { hobbies: ['영상/콘텐츠'], role: '조율자형', style: '다수활동형' } }
-    ];
-    runAnalysisEngine();
-  }
+      ClassStore.setCurrentStudent(target);
+      window.location.href = 'student-hub.html';
+    }
 
-  // 페이지 로드 시 설문 폼 초기화
-  window.addEventListener('DOMContentLoaded', initSurveyForm);
-</script>
+    function loginTeacher() {
+      const pin = document.getElementById('tea-pin').value;
+      if (pin === ClassStore.getTeacherPw()) {
+        sessionStorage.setItem('teacher_auth', 'true');
+        window.location.href = 'teacher-hub.html';
+      } else {
+        alert('교사 비밀번호가 일치하지 않습니다.');
+      }
+    }
+  </script>
 </body>
 </html>

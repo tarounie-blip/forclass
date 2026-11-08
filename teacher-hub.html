@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>우리반 누리집 - 교사 관리실</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/store.js"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #1e293b; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 공통 상단 헤더 -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="text-2xl">🏫</span>
+        <h1 id="header-title" class="font-extrabold text-lg text-slate-900">우리반 누리집</h1>
+        <span class="px-2.5 py-0.5 bg-slate-800 text-white text-xs font-bold rounded-full">교사 관리실</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="copyShareUrl()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-xs">
+          🔗 학생 배포 링크 복사 (설정·피드백 반영)
+        </button>
+        <a href="index.html" class="px-3 py-2 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl">
+          초기화면
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 space-y-8">
+
+    <!-- 1. 학급 앱 선택 (교사용 분석/관리 대시보드 진입) -->
+    <section>
+      <h2 class="text-lg font-bold text-slate-900 mb-3">📊 학급 앱별 대시보드 및 분석</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="app-analysis.html" class="group bg-white rounded-2xl border-2 border-indigo-100 hover:border-indigo-500 p-6 shadow-xs hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl">🤝</div>
+              <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg">실태조사 분석</span>
+            </div>
+            <h3 class="font-bold text-lg text-slate-900 mb-1">친구와 나 알아보기</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              학생들의 응답 데이터를 취합하여 교우관계 네트워크 맵, 갈등 주의 조합, 잠재적 단짝을 분석합니다.
+            </p>
+          </div>
+          <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+            <span>분석 대시보드 열기</span>
+            <span>→</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 2. 누리집 기본 설정 (제목 변경 & 교사 비밀번호 변경) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <h3 class="font-bold text-slate-900 text-base mb-1">✏️ 누리집 제목 변경</h3>
+        <p class="text-xs text-slate-500 mb-3">초기화면과 학생·교사 상단에 표시되는 제목을 변경합니다.</p>
+        <div class="flex gap-2">
+          <input type="text" id="input-portal-title" placeholder="예: 6학년 1반 누리집" class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+          <button onclick="savePortalTitle()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs">제목 저장</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <h3 class="font-bold text-slate-900 text-base mb-1">🔑 교사 비밀번호 변경 및 초기화</h3>
+        <p class="text-xs text-slate-500 mb-3">교사 관리실 입장 비밀번호를 변경하거나 기본값(1234)으로 초기화합니다.</p>
+        <div class="flex gap-2">
+          <input type="text" id="input-teacher-pw" placeholder="새 비밀번호 입력" class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-slate-800" />
+          <button onclick="saveTeacherPw()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs">변경</button>
+          <button onclick="resetTeacherPw()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">1234 초기화</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 학생 명단, 비밀번호 및 개별 피드백 통합 관리 -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+        <div>
+          <h3 class="font-bold text-slate-900 text-lg">👥 학생 명단 · 비밀번호 · 개별 피드백 관리</h3>
+          <p class="text-xs text-slate-500 mt-0.5">비밀번호를 수정하거나 학생별 피드백을 작성한 뒤, 우측 상단 <b>[학생 배포 링크 복사]</b>로 공유하면 학생 화면에 즉시 반영됩니다.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleBulkBox()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs">
+            + 명단 일괄 입력창 열기
+          </button>
+          <button onclick="resetAllPins()" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-xl text-xs">
+            🔄 전체 학생 비번 재발급
+          </button>
+        </div>
+      </div>
+
+      <!-- 일괄 등록 접이식 박스 -->
+      <div id="bulk-box" class="hidden mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+        <p class="text-xs font-bold text-slate-700 mb-2">한 줄에 한 명씩 '번호, 이름' 형식으로 붙여넣으세요. (예: 1, 김민준)</p>
+        <textarea id="bulk-textarea" rows="4" placeholder="1, 김민준&#10;2, 이서연&#10;3, 박지훈" class="w-full p-3 text-xs border border-slate-300 rounded-lg mb-2 bg-white"></textarea>
+        <div class="flex justify-end gap-2">
+          <button onclick="addSampleRoster()" class="px-3 py-1.5 bg-white border border-slate-300 text-slate-600 rounded-lg text-xs font-bold">샘플 8명 추가</button>
+          <button onclick="processBulkRoster()" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold">일괄 등록하기</button>
+        </div>
+      </div>
+
+      <!-- 개별 1명 추가 -->
+      <div class="flex flex-wrap gap-2 mb-4">
+        <input type="number" id="add-num" placeholder="번호" class="w-20 px-3 py-2 text-xs border border-slate-300 rounded-lg" />
+        <input type="text" id="add-name" placeholder="학생 이름" class="w-36 px-3 py-2 text-xs border border-slate-300 rounded-lg" />
+        <input type="text" id="add-pin" placeholder="비밀번호(미입력시 자동)" class="w-40 px-3 py-2 text-xs border border-slate-300 rounded-lg" />
+        <button onclick="addOneStudent()" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-lg text-xs hover:bg-slate-900">+ 학생 추가</button>
+      </div>
+
+      <!-- 학생 관리 테이블 -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-y border-slate-200 text-slate-700 text-xs">
+              <th class="py-3 px-3 w-16">번호</th>
+              <th class="py-3 px-3 w-28">이름</th>
+              <th class="py-3 px-3 w-44">비밀번호 (수정/초기화)</th>
+              <th class="py-3 px-3">학생에게 보낼 개별 피드백 (학생 포털 상단 노출)</th>
+              <th class="py-3 px-3 w-16 text-right">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="student-manage-tbody" class="divide-y divide-slate-100 text-xs"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('teacher_auth') !== 'true') {
+        alert('교사 인증이 필요합니다.');
+        window.location.href = 'index.html';
+        return;
+      }
+      renderAll();
+    });
+
+    function renderAll() {
+      const title = ClassStore.getTitle();
+      document.title = `${title} - 교사 관리실`;
+      document.getElementById('header-title').innerText = title;
+      document.getElementById('input-portal-title').value = title;
+
+      const roster = ClassStore.getRoster();
+      const feedbacks = ClassStore.getFeedbacks();
+      const tbody = document.getElementById('student-manage-tbody');
+
+      if (roster.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">등록된 학생이 없습니다. 명단을 추가해 주세요.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = roster.map((stu, idx) => {
+        const key = `${stu.num}_${stu.name}`;
+        const fb = feedbacks[key] || '';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-bold">${stu.num}번</td>
+            <td class="py-2.5 px-3 font-bold text-slate-900">${stu.name}</td>
+            <td class="py-2.5 px-3">
+              <div class="flex items-center gap-1">
+                <input type="text" value="${stu.pin}" onchange="editPin(${idx}, this.value)" class="w-20 px-2 py-1 font-mono border border-slate-300 rounded bg-white" />
+                <button onclick="resetPin(${idx})" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px]">초기화</button>
+              </div>
+            </td>
+            <td class="py-2.5 px-3">
+              <input type="text" value="${fb.replace(/"/g, '&quot;')}" onchange="saveFeedback('${key}', this.value)" placeholder="이 학생의 로그인 화면에 띄울 칭찬/조언 메시지를 입력하세요..." class="w-full px-3 py-1.5 border border-slate-200 rounded-lg focus:border-indigo-500 outline-none bg-white" />
+            </td>
+            <td class="py-2.5 px-3 text-right">
+              <button onclick="removeStudent(${idx})" class="text-rose-500 hover:text-rose-700 font-bold">삭제</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function savePortalTitle() {
+      const val = document.getElementById('input-portal-title').value;
+      ClassStore.setTitle(val);
+      renderAll();
+      alert('누리집 제목이 변경되었습니다.');
+    }
+
+    function saveTeacherPw() {
+      const val = document.getElementById('input-teacher-pw').value.trim();
+      if (val.length < 4) return alert('비밀번호는 4자리 이상 입력해 주세요.');
+      ClassStore.setTeacherPw(val);
+      document.getElementById('input-teacher-pw').value = '';
+      alert('교사 비밀번호가 변경되었습니다.');
+    }
+
+    function resetTeacherPw() {
+      if (!confirm('교사 비밀번호를 초기값(1234)으로 되돌리시겠습니까?')) return;
+      ClassStore.setTeacherPw('1234');
+      alert('교사 비밀번호가 1234로 초기화되었습니다.');
+    }
+
+    function toggleBulkBox() {
+      document.getElementById('bulk-box').classList.toggle('hidden');
+    }
+
+    function processBulkRoster() {
+      const lines = document.getElementById('bulk-textarea').value.trim().split('\n');
+      const roster = ClassStore.getRoster();
+      lines.forEach(line => {
+        const parts = line.trim().split(/[,\t\s]+/);
+        if (parts.length >= 2) {
+          const num = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
+          const name = parts[1].trim();
+          if (!isNaN(num) && name && !roster.some(s => s.num === num && s.name === name)) {
+            roster.push({ num, name, pin: ClassStore.generatePin() });
+          }
+        }
+      });
+      ClassStore.saveRoster(roster);
+      document.getElementById('bulk-textarea').value = '';
+      toggleBulkBox();
+      renderAll();
+    }
+
+    function addSampleRoster() {
+      const samples = [
+        { num: 1, name: '김민준', pin: '1111' }, { num: 2, name: '박지훈', pin: '2222' },
+        { num: 3, name: '이서연', pin: '3333' }, { num: 4, name: '최유진', pin: '4444' },
+        { num: 5, name: '정태양', pin: '5555' }, { num: 6, name: '한서아', pin: '6666' },
+        { num: 7, name: '강도윤', pin: '7777' }, { num: 8, name: '송하은', pin: '8888' }
+      ];
+      ClassStore.saveRoster(samples);
+      toggleBulkBox();
+      renderAll();
+    }
+
+    function addOneStudent() {
+      const num = parseInt(document.getElementById('add-num').value, 10);
+      const name = document.getElementById('add-name').value.trim();
+      const pin = document.getElementById('add-pin').value.trim() || ClassStore.generatePin();
+      if (isNaN(num) || !name) return alert('번호와 이름을 입력해 주세요.');
+      const roster = ClassStore.getRoster();
+      roster.push({ num, name, pin });
+      ClassStore.saveRoster(roster);
+      document.getElementById('add-num').value = '';
+      document.getElementById('add-name').value = '';
+      document.getElementById('add-pin').value = '';
+      renderAll();
+    }
+
+    function editPin(idx, newPin) {
+      const roster = ClassStore.getRoster();
+      if (newPin.trim()) roster[idx].pin = newPin.trim();
+      ClassStore.saveRoster(roster);
+      renderAll();
+    }
+
+    function resetPin(idx) {
+      const roster = ClassStore.getRoster();
+      roster[idx].pin = ClassStore.generatePin();
+      ClassStore.saveRoster(roster);
+      renderAll();
+    }
+
+    function resetAllPins() {
+      if (!confirm('모든 학생의 비밀번호를 새 난수로 초기화하시겠습니까?')) return;
+      const roster = ClassStore.getRoster();
+      roster.forEach(s => s.pin = ClassStore.generatePin());
+      ClassStore.saveRoster(roster);
+      renderAll();
+    }
+
+    function removeStudent(idx) {
+      const roster = ClassStore.getRoster();
+      roster.splice(idx, 1);
+      ClassStore.saveRoster(roster);
+      renderAll();
+    }
+
+    function saveFeedback(studentKey, msg) {
+      ClassStore.setFeedback(studentKey, msg);
+    }
+
+    function copyShareUrl() {
+      const url = ClassStore.generateShareUrl();
+      navigator.clipboard.writeText(url).then(() => {
+        alert('학생 배포용 링크가 복사되었습니다!\n\n변경된 누리집 제목, 학생 명단/비밀번호, 개별 피드백 내용이 모두 포함되어 있습니다.');
+      }).catch(() => {
+        prompt('아래 주소를 복사해 학생들에게 공유하세요:', url);
+      });
+    }
+  </script>
+</body>
+</html>
